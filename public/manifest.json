@@ -1,0 +1,19 @@
+{
+  "name": "Bris House - בית הברית",
+  "short_name": "Bris House",
+  "description": "מערכת ניהול לוח שנה לבריתות",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0e27",
+  "theme_color": "#0a0e27",
+  "dir": "rtl",
+  "lang": "he",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
