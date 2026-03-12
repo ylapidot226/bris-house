@@ -8,7 +8,9 @@ export default function AddBrit() {
     familyName: '',
     phone: '',
     guests: '',
+    toDate: '',
   });
+  const [multiDay, setMultiDay] = useState(false);
   const [events, setEvents] = useState([]);
   const [warning, setWarning] = useState('');
   const [success, setSuccess] = useState('');
@@ -24,7 +26,7 @@ export default function AddBrit() {
       const existing = events.filter(e => e.date === formData.date);
       if (existing.length > 0) {
         const names = existing.map(e => e.familyName).join(', ');
-        setWarning(`שים לב! כבר קיימת ברית בתאריך הזה עבור: ${names}`);
+        setWarning(`שים לב! כבר קיימת הזמנה בתאריך הזה עבור: ${names}`);
       } else {
         setWarning('');
       }
@@ -38,14 +40,14 @@ export default function AddBrit() {
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm('האם אתה בטוח שברצונך למחוק ברית זו?')) {
+    if (window.confirm('האם אתה בטוח שברצונך למחוק הזמנה זו?')) {
       await deleteEvent(id);
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.date || !formData.familyName || !formData.phone || !formData.guests) {
+    if (!formData.date || !formData.familyName || !formData.phone) {
       return;
     }
     setLoading(true);
@@ -54,11 +56,13 @@ export default function AddBrit() {
         date: formData.date,
         familyName: formData.familyName,
         phone: formData.phone,
-        guests: parseInt(formData.guests, 10),
+        guests: formData.guests ? parseInt(formData.guests, 10) : 0,
+        toDate: formData.toDate || '',
         createdAt: new Date().toISOString(),
       });
-      setSuccess('הברית נוספה בהצלחה!');
-      setFormData({ date: '', familyName: '', phone: '', guests: '' });
+      setSuccess('ההזמנה נוספה בהצלחה!');
+      setFormData({ date: '', familyName: '', phone: '', guests: '', toDate: '' });
+      setMultiDay(false);
       setTimeout(() => setSuccess(''), 3000);
     } catch {
       setSuccess('');
@@ -69,8 +73,8 @@ export default function AddBrit() {
   return (
     <div className="page-container">
       <div className="form-card">
-        <h1 className="page-title">הוספת ברית חדשה</h1>
-        <p className="page-subtitle">מלא את הפרטים להזמנת אולם</p>
+        <h1 className="page-title">הוספת הזמנה ללינה</h1>
+        <p className="page-subtitle">מלא את הפרטים להזמנת לינה</p>
 
         {success && <div className="alert alert-success">{success}</div>}
         {warning && <div className="alert alert-warning">{warning}</div>}
@@ -126,19 +130,48 @@ export default function AddBrit() {
               placeholder="0"
               min="1"
               dir="ltr"
-              required
             />
           </div>
 
+          <div className="form-group checkbox-group">
+            <label>
+              <input
+                type="checkbox"
+                checked={multiDay}
+                onChange={(e) => {
+                  setMultiDay(e.target.checked);
+                  if (!e.target.checked) {
+                    setFormData(prev => ({ ...prev, toDate: '' }));
+                  }
+                }}
+              style={{ marginLeft: '8px' }}
+              />
+              ההזמנה היא לכמה ימים
+            </label>
+          </div>
+
+          {multiDay && (
+            <div className="form-group">
+              <label htmlFor="toDate">עד תאריך</label>
+              <input
+                type="date"
+                id="toDate"
+                name="toDate"
+                value={formData.toDate}
+                onChange={handleChange}
+              />
+            </div>
+          )}
+
           <button type="submit" className="btn-primary" disabled={loading}>
-            {loading ? 'שומר...' : 'הוסף ברית'}
+            {loading ? 'שומר...' : 'הוסף הזמנה'}
           </button>
         </form>
       </div>
 
       {events.length > 0 && (
         <div className="form-card recent-events">
-          <h2 className="section-title">בריתות קרובות</h2>
+          <h2 className="section-title">הזמנות קרובות</h2>
           <div className="events-list">
             {events
               .filter(e => e.date >= new Date().toISOString().slice(0, 10))
