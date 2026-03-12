@@ -50,7 +50,11 @@ export default function Calendar() {
 
   const getEventsForDate = (date) => {
     const dateStr = format(date, 'yyyy-MM-dd');
-    return events.filter(e => e.date === dateStr);
+    return events.filter(e => {
+      if (e.date === dateStr) return true;
+      if (e.multiDay && e.toDate && dateStr > e.date && dateStr <= e.toDate) return true;
+      return false;
+    });
   };
 
   const handleDateClick = (date) => {
@@ -153,6 +157,14 @@ export default function Calendar() {
                     <h4>{event.familyName}</h4>
                     <p dir="ltr" className="detail-phone">{event.phone}</p>
                     <p className="detail-guests">{event.guests} אורחים</p>
+                    {event.multiDay && !event.toDate && (
+                      <p className="detail-open-booking">הזמנה פתוחה לכמה ימים</p>
+                    )}
+                    {event.multiDay && event.toDate && (
+                      <p className="detail-dates">
+                        {format(new Date(event.date + 'T00:00:00'), 'dd/MM')} - {format(new Date(event.toDate + 'T00:00:00'), 'dd/MM')}
+                      </p>
+                    )}
                   </div>
                   <button
                     className="btn-delete"

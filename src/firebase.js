@@ -39,6 +39,8 @@ function mapRow(row) {
   return {
     id: row.id,
     date: row.date,
+    toDate: row.to_date || '',
+    multiDay: !!row.multi_day,
     familyName: row.family_name,
     phone: row.phone,
     guests: row.guests,
@@ -47,18 +49,23 @@ function mapRow(row) {
 }
 
 export async function addEvent(event) {
+  const row = {
+    date: event.date,
+    family_name: event.familyName,
+    phone: event.phone || null,
+    guests: event.guests,
+  };
+  if (event.multiDay) {
+    row.multi_day = true;
+    row.to_date = event.toDate || null;
+  }
   const { data, error } = await supabase
     .from('events')
-    .insert({
-      date: event.date,
-      family_name: event.familyName,
-      phone: event.phone,
-      guests: event.guests,
-    })
+    .insert(row)
     .select()
     .single();
 
-  if (error) throw error;
+  if (error) { console.error('addEvent error:', JSON.stringify(error), 'row:', JSON.stringify(row)); throw error; }
   return { key: data.id };
 }
 
@@ -74,6 +81,8 @@ export async function deleteEvent(id) {
 export async function updateEvent(id, updates) {
   const dbUpdates = {};
   if (updates.date !== undefined) dbUpdates.date = updates.date;
+  if (updates.toDate !== undefined) dbUpdates.to_date = updates.toDate || null;
+  if (updates.multiDay !== undefined) dbUpdates.multi_day = updates.multiDay;
   if (updates.familyName !== undefined) dbUpdates.family_name = updates.familyName;
   if (updates.phone !== undefined) dbUpdates.phone = updates.phone;
   if (updates.guests !== undefined) dbUpdates.guests = updates.guests;

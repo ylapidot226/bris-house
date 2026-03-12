@@ -47,8 +47,14 @@ export default function AddBrit() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.date || !formData.familyName || !formData.phone) {
+    if (!formData.date || !formData.familyName) {
       return;
+    }
+    if (warning) {
+      const confirmed = window.confirm(
+        `${warning}\nהאם אתה בטוח שברצונך להוסיף הזמנה נוספת בתאריך הזה?`
+      );
+      if (!confirmed) return;
     }
     setLoading(true);
     try {
@@ -57,6 +63,7 @@ export default function AddBrit() {
         familyName: formData.familyName,
         phone: formData.phone,
         guests: formData.guests ? parseInt(formData.guests, 10) : 0,
+        multiDay: multiDay,
         toDate: formData.toDate || '',
         createdAt: new Date().toISOString(),
       });
@@ -115,7 +122,6 @@ export default function AddBrit() {
               onChange={handleChange}
               placeholder="050-0000000"
               dir="ltr"
-              required
             />
           </div>
 
