@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#111640"/>
+      <stop offset="100%" style="stop-color:#0a0e27"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#e8d48b"/>
+      <stop offset="100%" style="stop-color:#9a7b2e"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <rect x="16" y="16" width="1168" height="598" rx="24" fill="none" stroke="url(#gold)" stroke-width="3" opacity="0.3"/>
+  <text x="600" y="280" text-anchor="middle" font-family="Georgia, serif" font-weight="700" font-size="180" fill="url(#gold)">BH</text>
+  <line x1="400" y1="320" x2="800" y2="320" stroke="url(#gold)" stroke-width="4" stroke-linecap="round" opacity="0.5"/>
+  <text x="600" y="400" text-anchor="middle" font-family="Georgia, serif" font-weight="600" font-size="56" fill="url(#gold)">Bris House</text>
+  <text x="600" y="470" text-anchor="middle" font-family="Arial, sans-serif" font-size="32" fill="#a8a4b8">בית הברית · ניהול לוח שנה לבריתות</text>
+</svg>

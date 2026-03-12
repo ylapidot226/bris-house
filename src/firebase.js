@@ -1,46 +1,87 @@
-const LOCAL_STORAGE_KEY = 'bris-house-events';
+import { createClient } from '@supabase/supabase-js';
 
-function getLocalEvents() {
-  try {
-    return JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY) || '[]');
-  } catch {
-    return [];
-  }
-}
+const supabaseUrl = 'https://gnicpbfqytklydktqngw.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImduaWNwYmZxeXRrbHlka3Rxbmd3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzMjY4NjEsImV4cCI6MjA4ODkwMjg2MX0.KnLtsD4sQ5qrScM00-mURdZ08f3d23JLd0_P9OylJFs';
 
-function saveLocalEvents(events) {
-  localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(events));
-  window.dispatchEvent(new CustomEvent('bris-storage-update'));
-}
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 export function subscribeToEvents(callback) {
-  callback(getLocalEvents());
-  const handler = () => callback(getLocalEvents());
-  const storageHandler = (e) => { if (e.key === LOCAL_STORAGE_KEY) callback(getLocalEvents()); };
-  window.addEventListener('bris-storage-update', handler);
-  window.addEventListener('storage', storageHandler);
+  // Initial fetch
+  supabase
+    .from('events')
+    .select('*')
+    .order('date', { ascending: true })
+    .then(({ data }) => {
+      if (data) callback(data.map(mapRow));
+    });
+
+  // Realtime subscription
+  const channel = supabase
+    .channel('events-changes')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'events' }, () => {
+      // Re-fetch all on any change for simplicity
+      supabase
+        .from('events')
+        .select('*')
+        .order('date', { ascending: true })
+        .then(({ data }) => {
+          if (data) callback(data.map(mapRow));
+        });
+    })
+    .subscribe();
+
   return () => {
-    window.removeEventListener('bris-storage-update', handler);
-    window.removeEventListener('storage', storageHandler);
+    supabase.removeChannel(channel);
   };
 }
 
-export function addEvent(event) {
-  const events = getLocalEvents();
-  const id = Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
-  events.push({ id, ...event });
-  saveLocalEvents(events);
-  return Promise.resolve({ key: id });
+function mapRow(row) {
+  return {
+    id: row.id,
+    date: row.date,
+    familyName: row.family_name,
+    phone: row.phone,
+    guests: row.guests,
+    createdAt: row.created_at,
+  };
 }
 
-export function deleteEvent(id) {
-  const events = getLocalEvents().filter(e => e.id !== id);
-  saveLocalEvents(events);
-  return Promise.resolve();
+export async function addEvent(event) {
+  const { data, error } = await supabase
+    .from('events')
+    .insert({
+      date: event.date,
+      family_name: event.familyName,
+      phone: event.phone,
+      guests: event.guests,
+    })
+    .select()
+    .single();
+
+  if (error) throw error;
+  return { key: data.id };
 }
 
-export function updateEvent(id, data) {
-  const events = getLocalEvents().map(e => e.id === id ? { ...e, ...data } : e);
-  saveLocalEvents(events);
-  return Promise.resolve();
+export async function deleteEvent(id) {
+  const { error } = await supabase
+    .from('events')
+    .delete()
+    .eq('id', id);
+
+  if (error) throw error;
+}
+
+export async function updateEvent(id, updates) {
+  const dbUpdates = {};
+  if (updates.date !== undefined) dbUpdates.date = updates.date;
+  if (updates.familyName !== undefined) dbUpdates.family_name = updates.familyName;
+  if (updates.phone !== undefined) dbUpdates.phone = updates.phone;
+  if (updates.guests !== undefined) dbUpdates.guests = updates.guests;
+
+  const { error } = await supabase
+    .from('events')
+    .update(dbUpdates)
+    .eq('id', id);
+
+  if (error) throw error;
 }
